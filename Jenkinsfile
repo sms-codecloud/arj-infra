@@ -13,6 +13,13 @@ pipeline {
             }
         }
 
+        stage('Check PATH') {
+            steps {
+                bat 'echo %PATH%'
+                bat 'where terraform'
+            }
+        }
+
         stage('Terraform Init & Apply') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
