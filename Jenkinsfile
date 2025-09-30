@@ -15,7 +15,7 @@ pipeline {
 
                 dir('C:\\Jenkins\\workspace') {
                     bat '''
-                        git clone -b main https://github.com/sms-codecloud/arj-infra.git.
+                        git clone -b main https://github.com/sms-codecloud/arj-infra.git
                     '''
                 }
             }
