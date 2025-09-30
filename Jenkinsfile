@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'win-dev'   // your Windows agent label
+        label 'win-dev'
     }
 
     environment {
@@ -10,16 +10,13 @@ pipeline {
     stages {
         stage('Checkout Repo') {
             steps {
-                // Check Git version (Windows Git)
-                bat 'git --version'
-                
-                // Clean workspace before checkout
+                // Clean workspace before cloning
                 cleanWs()
 
+                bat 'git --version'
+
                 dir('D:\\jenkins-workspace\\workspace') {
-                    bat '''
-                        git clone -b main https://github.com/sms-codecloud/arj-infra.git
-                    '''
+                    bat 'git clone -b main https://github.com/sms-codecloud/arj-infra.git'
                 }
             }
         }
