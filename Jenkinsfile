@@ -12,6 +12,9 @@ pipeline {
             steps {
                 // Check Git version (Windows Git)
                 bat 'git --version'
+                
+                // Clean workspace before checkout
+                cleanWs()
 
                 dir('D:\\jenkins-workspace\\workspace') {
                     bat '''
