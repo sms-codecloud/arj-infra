@@ -15,7 +15,7 @@ pipeline {
 
                 dir('C:\\Jenkins\\workspace') {
                     bat '''
-                        git clone -b x https://github.com/sms-codecloud/arj-infra.git .
+                        git clone -b main https://github.com/sms-codecloud/arj-infra.git.
                     '''
                 }
             }
@@ -32,6 +32,7 @@ pipeline {
                             set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
                             terraform init
+                            terraform plan
                         """
                     }
                 }
