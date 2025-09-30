@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'dev-wsl'   // make sure your WSL agent has this label
+        label 'win-dev'   // your Windows agent label
     }
 
     environment {
@@ -10,10 +10,11 @@ pipeline {
     stages {
         stage('Checkout Repo') {
             steps {
-                // Use WSL Git
-                sh 'git --version'  // sanity check
-                dir('/home/shankar/workspace') {
-                    sh '''
+                // Check Git version (Windows Git)
+                bat 'git --version'
+
+                dir('C:\\Jenkins\\workspace') {
+                    bat '''
                         git clone -b x https://github.com/sms-codecloud/arj-infra.git .
                     '''
                 }
@@ -25,14 +26,13 @@ pipeline {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']
                 ]) {
-                    dir('/home/shankar/workspace/arj-infra/s3') { // your terraform folder
-                        sh '''
-                            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    dir('C:\\Jenkins\\workspace\\arj-infra\\s3') {
+                        bat """
+                            set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                            set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
                             terraform init
-                            terraform plan
-                        '''
+                        """
                     }
                 }
             }
