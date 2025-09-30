@@ -22,9 +22,9 @@ pipeline {
                             set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
                             set PATH=C:\\binaries\\terraform;%PATH%
-                            
-                            terraform init
-                            terraform plan
+
+                            terraform init -no-color
+                            terraform plan -no-color
                         """
                     }
                 }
