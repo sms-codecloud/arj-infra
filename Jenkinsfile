@@ -13,7 +13,7 @@ pipeline {
                 // Check Git version (Windows Git)
                 bat 'git --version'
 
-                dir('C:\\Jenkins\\workspace') {
+                dir('D:\\jenkins-workspace\\workspace') {
                     bat '''
                         git clone -b main https://github.com/sms-codecloud/arj-infra.git
                     '''
@@ -26,7 +26,7 @@ pipeline {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']
                 ]) {
-                    dir('C:\\Jenkins\\workspace\\arj-infra\\s3') {
+                    dir('D:\\jenkins-workspace\\workspace\\arj-infra\\s3') {
                         bat """
                             set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
                             set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
