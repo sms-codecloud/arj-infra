@@ -35,7 +35,7 @@ pipeline {
 
               echo Selected action: %TF_ACTION%
               terraform version
-              terraform init -no-color
+              terraform init -upgrade -no-color
 
               if /I "%TF_ACTION%"=="DESTROY" (
                 echo Running plan (destroy)...
