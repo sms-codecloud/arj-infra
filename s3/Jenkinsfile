@@ -1,42 +1,74 @@
 pipeline {
-    agent { label 'win-dev' }
-    environment { TF_IN_AUTOMATION = "true" }
+  agent { label 'win-dev' }
+  options {
+    // optional but recommended so two runs don't clobber the same state
+    disableConcurrentBuilds()
+  }
+  environment { TF_IN_AUTOMATION = "true" }
 
-    stages {
-        stage('Checkout Repo') {
-            steps {
-                cleanWs() // clear job workspace
-                bat 'git --version'
-                dir("${env.WORKSPACE}\\arj-infra") {
-                    bat 'git clone -b main https://github.com/sms-codecloud/arj-infra.git .'
-                }
-            }
+  parameters {
+    choice(
+      name: 'TF_ACTION',
+      choices: ['APPLY', 'DESTROY'],
+      description: 'Choose whether to create (APPLY) or destroy (DESTROY) Terraform resources.'
+    )
+  }
+
+  stages {
+    stage('Checkout Repo') {
+      steps {
+        cleanWs()
+        bat 'git --version'
+        dir("${env.WORKSPACE}\\arj-infra") {
+          bat 'git clone -b main https://github.com/sms-codecloud/arj-infra.git .'
         }
-
-        stage('Terraform Init & Apply') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
-                    dir("${env.WORKSPACE}\\arj-infra\\s3") {
-                        bat """
-                            set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
-                            set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
-
-                            set PATH=C:\\binaries\\terraform;%PATH%
-
-                            terraform init -no-color
-                            terraform plan -no-color
-                            terraform apply -no-color -input=false -auto-approve
-                        """
-                    }
-                }
-            }
-        }
+      }
     }
 
-    post {
-        always {
-            echo 'Cleaning up workspace...'
-            cleanWs()
+    stage('Terraform Init & Run') {
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
+          dir("${env.WORKSPACE}\\arj-infra\\s3") {
+            bat """
+              @echo on
+              setlocal ENABLEDELAYEDEXPANSION
+
+              rem Export AWS creds for Terraform
+              set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+              set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+
+              rem Ensure terraform is on PATH
+              set PATH=C:\\binaries\\terraform;%PATH%
+
+              echo Selected action: %TF_ACTION%
+
+              terraform version
+              terraform init -no-color
+
+              if /I "%TF_ACTION%"=="DESTROY" (
+                echo Running plan (destroy)...
+                terraform plan -destroy -no-color -input=false
+
+                echo Destroying...
+                terraform destroy -no-color -input=false -auto-approve
+              ) else (
+                echo Running plan (apply)...
+                terraform plan -no-color -input=false
+
+                echo Applying...
+                terraform apply -no-color -input=false -auto-approve
+              )
+            """
+          }
         }
+      }
     }
+  }
+
+  post {
+    always {
+      echo 'Cleaning up workspace...'
+      cleanWs()
+    }
+  }
 }
