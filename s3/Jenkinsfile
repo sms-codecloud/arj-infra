@@ -25,6 +25,7 @@ pipeline {
 
                             terraform init -no-color
                             terraform plan -no-color
+                            terraform apply -no-color -input=false -auto-approve
                         """
                     }
                 }
