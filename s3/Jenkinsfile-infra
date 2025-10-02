@@ -1,38 +1,64 @@
-stage('Terraform Init & Run') {
-  steps {
-    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
-      dir("${env.WORKSPACE}\\arj-infra\\s3") {
-        bat """
-          @echo on
-          rem Turn on delayed expansion so variables are expanded at execution time
-          setlocal EnableExtensions EnableDelayedExpansion
+pipeline {
+  agent { label 'win-dev' }
+  options { disableConcurrentBuilds() }
+  environment { TF_IN_AUTOMATION = "true" }
 
-          rem If you don't actually need to re-set these, you can delete the next 2 lines.
-          rem Using !VAR! avoids breaking on ) or & in secrets.
-          set "AWS_ACCESS_KEY_ID=!AWS_ACCESS_KEY_ID!"
-          set "AWS_SECRET_ACCESS_KEY=!AWS_SECRET_ACCESS_KEY!"
+  parameters {
+    choice(
+      name: 'TF_ACTION',
+      choices: ['APPLY', 'DESTROY'],
+      description: 'Choose whether to apply or destroy Terraform.'
+    )
+  }
 
-          rem Avoid %PATH% inside parens; use delayed expansion
-          set "PATH=C:\\binaries\\terraform;!PATH!"
-
-          echo Selected action: %TF_ACTION%
-
-          terraform version
-          terraform init -upgrade -no-color
-
-          if /I "%TF_ACTION%"=="DESTROY" (
-            echo Running plan (destroy)...
-            terraform plan -destroy -no-color -input=false
-            echo Destroying...
-            terraform destroy -no-color -input=false -auto-approve
-          ) else (
-            echo Running plan (apply)...
-            terraform plan -no-color -input=false
-            echo Applying...
-            terraform apply -no-color -input=false -auto-approve
-          )
-        """
+  stages {
+    stage('Checkout Repo') {
+      steps {
+        cleanWs()
+        bat 'git --version'
+        dir("${env.WORKSPACE}\\arj-infra") {
+          bat 'git clone -b main https://github.com/sms-codecloud/arj-infra.git .'
+        }
       }
+    }
+
+    stage('Terraform Init & Run') {
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
+          dir("${env.WORKSPACE}\\arj-infra\\s3") {
+            bat """
+              @echo on
+              setlocal EnableExtensions EnableDelayedExpansion
+
+              rem Avoid %PATH% / secrets expansion issues inside parens
+              set "PATH=C:\\binaries\\terraform;!PATH!"
+
+              echo Selected action: %TF_ACTION%
+              terraform version
+              terraform init -no-color
+
+              if /I "%TF_ACTION%"=="DESTROY" (
+                echo Running plan (destroy)...
+                terraform plan -destroy -no-color -input=false
+                echo Destroying...
+                terraform destroy -no-color -input=false -auto-approve
+              ) else (
+                echo Running plan (apply)...
+                terraform plan -no-color -input=false
+                echo Applying...
+                terraform apply -no-color -input=false -auto-approve
+              )
+            """
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'Cleaning up workspace...'
+      cleanWs()
     }
   }
 }
