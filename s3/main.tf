@@ -1,6 +1,6 @@
 # Create S3 bucket
 resource "aws_s3_bucket" "this" {
-  bucket = "arj-terraform-state"
+  bucket = "arj-bootcamp"
 
   tags = {
     Name        = "shankar-arj"
