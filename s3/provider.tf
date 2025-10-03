@@ -5,6 +5,10 @@ terraform {
         version = "~> 6.10.0"
         }
     }
+    backend "local" {
+        path = "D:\\Git-CodeCloud\\terraform_states\\arj-infra\\terraform.tfstate"
+      
+    }
 }
 
 provider "aws" {
