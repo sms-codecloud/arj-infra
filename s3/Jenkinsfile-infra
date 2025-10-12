@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'win-dev' }
+  agent { label 'win-agent-1' }
   options { disableConcurrentBuilds() }
   environment { TF_IN_AUTOMATION = "true" }
 
