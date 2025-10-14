@@ -39,15 +39,15 @@ pipeline {
               switch ($env:TF_ACTION) {
                 'DESTROY' {
                   Write-Host "Running plan (destroy)..."
-                  terraform plan -var-file="sample.tfvars" -auto-approve -input=false -no-color
+                  terraform plan -var-file="sample.tfvars" -out="dest.tfplan" -auto-approve -input=false -no-color
                   Write-Host "Destroying..."
-                  terraform destroy -var-file="sample.tfvars" -auto-approve -input=false -no-color
+                  terraform destroy -var-file="sample.tfvars" -auto-approve -input=false -no-color  "dest.tfplan"
                 }
                 'APPLY' {
                   Write-Host "Running plan (apply)..."
-                  terraform plan -var-file="sample.tfvars" -auto-approve -input=false -no-color
+                  terraform plan -var-file="sample.tfvars" -out="create.tfplan" -auto-approve -input=false -no-color
                   Write-Host "Applying..."
-                  terraform apply -var-file="sample.tfvars" -auto-approve -input=false -no-color
+                  terraform apply -var-file="sample.tfvars" -auto-approve -input=false -no-color "create.tfplan"
                 }
                 default {
                   throw "Unsupported TF_ACTION: '$($env:TF_ACTION)'. Expected 'APPLY' or 'DESTROY'."
