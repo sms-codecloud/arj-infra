@@ -23,41 +23,77 @@ pipeline {
     }
 
     stage('Terraform Init & Run') {
-    steps {
-      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
-        withEnv(["PATH=C:\\binaries\\terraform;${env.PATH}"]) {
-          dir("${env.WORKSPACE}\\arj-infra\\s3") {
-            powershell '''
-              $ErrorActionPreference = "Stop"
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
+          withEnv(["PATH=C:\\binaries\\terraform;${env.PATH}"]) {
+            dir("${env.WORKSPACE}\\arj-infra\\s3") {
+              powershell '''
+                $ErrorActionPreference = "Stop"
 
-              Write-Host "Selected action: $env:TF_ACTION"
-              terraform version
+                Write-Host "Selected action: $env:TF_ACTION"
+                terraform version
 
-              # Init (add -upgrade/-reconfigure if you want)
-              terraform init -no-color
+                # Ensure tfvars exists (create a minimal one if not committed)
+                $tfvars = "sample.tfvars"
+                if (-not (Test-Path -LiteralPath $tfvars)) {
+                  @"# Auto-generated fallback
+                  bucket_name      = "arj-bootcamp"
+                  zip_file_path    = "D:/jenkins-workspace/web.zip"
+                  base_key_prefix  = "web/student-web"
+                  "@ | Set-Content -Path $tfvars -Encoding UTF8 -NoNewline
+                                Write-Host "Created fallback $tfvars"
+                }
 
-              switch ($env:TF_ACTION) {
-                'DESTROY' {
-                  Write-Host "Running plan (destroy)..."
-                  terraform plan -var-file="sample.tfvars" -out="dest.tfplan" -auto-approve -input=false -no-color
-                  Write-Host "Destroying..."
-                  terraform destroy -var-file="sample.tfvars" -auto-approve -input=false -no-color  "dest.tfplan"
+                # Init
+                terraform init -no-color
+
+                switch ($env:TF_ACTION) {
+                  'APPLY' {
+                    Write-Host "Planning (create)..."
+                    terraform plan `
+                      -var-file="$tfvars" `
+                      -input=false `
+                      -no-color `
+                      -out="create.tfplan"
+
+                    Write-Host "Applying saved plan..."
+                    # Do NOT pass -var-file here; plan already captured variables
+                    terraform apply `
+                      -auto-approve `
+                      -input=false `
+                      -no-color `
+                      "create.tfplan"
+                  }
+
+                  'DESTROY' {
+                    Write-Host "Planning destroy (optional)…"
+                    terraform plan `
+                      -destroy `
+                      -var-file="$tfvars" `
+                      -input=false `
+                      -no-color `
+                      -out="destroy.tfplan"
+
+                    Write-Host "Destroying…"
+                    # Do NOT pass a plan file to destroy; destroy doesn't take it
+                    terraform destroy `
+                      -var-file="$tfvars" `
+                      -auto-approve `
+                      -input=false `
+                      -no-color
+                  }
+
+                  default {
+                    throw "Unsupported TF_ACTION: '$($env:TF_ACTION)'. Expected 'APPLY' or 'DESTROY'."
+                  }
                 }
-                'APPLY' {
-                  Write-Host "Running plan (apply)..."
-                  terraform plan -var-file="sample.tfvars" -out="create.tfplan" -auto-approve -input=false -no-color
-                  Write-Host "Applying..."
-                  terraform apply -var-file="sample.tfvars" -auto-approve -input=false -no-color "create.tfplan"
-                }
-                default {
-                  throw "Unsupported TF_ACTION: '$($env:TF_ACTION)'. Expected 'APPLY' or 'DESTROY'."
-                }
-              }
-            '''
+              '''
+            }
           }
         }
       }
     }
+
 }
 
   }
