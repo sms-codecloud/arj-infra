@@ -46,7 +46,7 @@ pipeline {
                     terraform plan `
                       -destroy `
                       -var-file="sample.tfvars" `
-                      -out="dest.tfplan" `
+                      -out="remove.tfplan" `
                       -input=false `
                       -no-color
 
