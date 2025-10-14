@@ -16,3 +16,14 @@ resource "aws_s3_bucket_public_access_block" "ui" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+resource "aws_s3_object" "upload_zip" {
+  bucket = aws_s3_bucket.this.id
+  key    = var.s3_key
+  source = var.zip_file_path
+  etag   = filemd5(var.zip_file_path)
+
+  # Optional settings
+  content_type = "application/zip"
+  acl          = "private"
+}

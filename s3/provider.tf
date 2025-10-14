@@ -6,7 +6,7 @@ terraform {
         }
     }
     backend "local" {
-        path = "D:\\Git-CodeCloud\\terraform_states\\arj-infra\\terraform.tfstate"
+        path = "D:\\Git-CodeCloud\\terraform_states\\arj-infra\\s3\\terraform.tfstate"
       
     }
 }
