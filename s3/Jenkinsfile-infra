@@ -23,63 +23,67 @@ pipeline {
     }
 
     stage('Terraform Init & Run') {
-    steps {
-      withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
-        withEnv(["PATH=C:\\binaries\\terraform;${env.PATH}"]) {
-          dir("${env.WORKSPACE}\\arj-infra\\s3") {
-            powershell '''
-              $ErrorActionPreference = "Stop"
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws_secrets_shankar']]) {
+          withEnv(["PATH=C:\\binaries\\terraform;${env.PATH}"]) {
+            // Run Terraform from the module directory that contains *.tf
+            dir("${env.WORKSPACE}\\arj-infra\\s3") {
+              powershell '''
+                $ErrorActionPreference = "Stop"
 
-              Write-Host "Selected action: $env:TF_ACTION"
-              terraform version
-
-              # Init (add -upgrade/-reconfigure if you want)
-              terraform init -no-color
-
-              switch ($env:TF_ACTION) {
-                'DESTROY' {
-                  Write-Host "Running plan (destroy)..."
-                  terraform plan `
-                    -destroy `
-                    -var-file="sample.tfvars" `
-                    -out="dest.tfplan" `
-                    -input=false `
-                    -no-color
-
-                  Write-Host "Destroying..."
-                  terraform destroy `
-                    -var-file="sample.tfvars" `
-                    -auto-approve `
-                    -input=false `
-                    -no-color
-                }
-                'APPLY' {
-                  Write-Host "Running plan (apply)..."
-                  terraform plan `
-                    -var-file="sample.tfvars" `
-                    -out="create.tfplan" `
-                    -input=false `
-                    -no-color
-
-                  Write-Host "Applying..."
-                  terraform apply `
-                    -auto-approve `
-                    -input=false `
-                    -no-color `
-                    "create.tfplan"
+                if (-not (Test-Path -LiteralPath "sample.tfvars")) {
+                  throw "sample.tfvars not found in: $(Get-Location). Place it next to your *.tf files."
                 }
 
-                default {
-                  throw "Unsupported TF_ACTION: '$($env:TF_ACTION)'. Expected 'APPLY' or 'DESTROY'."
+                Write-Host "Selected action: $env:TF_ACTION"
+                terraform version | Out-Null
+
+                terraform init -no-color
+
+                switch ($env:TF_ACTION) {
+                  'DESTROY' {
+                    Write-Host "Planning destroy..."
+                    terraform plan `
+                      -destroy `
+                      -var-file="sample.tfvars" `
+                      -out="dest.tfplan" `
+                      -input=false `
+                      -no-color
+
+                    Write-Host "Destroying..."
+                    terraform destroy `
+                      -var-file="sample.tfvars" `
+                      -auto-approve `
+                      -input=false `
+                      -no-color
+                  }
+
+                  'APPLY' {
+                    Write-Host "Planning apply..."
+                    terraform plan `
+                      -var-file="sample.tfvars" `
+                      -out="create.tfplan" `
+                      -input=false `
+                      -no-color
+
+                    Write-Host "Applying..."
+                    terraform apply `
+                      -auto-approve `
+                      -input=false `
+                      -no-color `
+                      "create.tfplan"
+                  }
+
+                  default {
+                    throw "Unsupported TF_ACTION: '$($env:TF_ACTION)'. Expected 'APPLY' or 'DESTROY'."
+                  }
                 }
-              }
-            '''
+              '''
+            }
           }
         }
       }
     }
-}
-
   }
 
   post {
