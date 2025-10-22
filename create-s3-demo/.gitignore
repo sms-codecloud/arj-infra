@@ -1,0 +1,181 @@
+# TERRAFORM.GITIGNORE
+# Local .terraform directories
+**/.terraform/*
+.terraform.tfstate.lock.info
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Exclude override files (used for local customization)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Exclude variable definitions that may contain secrets
+*.tfvars
+*.tfvars.json
+!example.tfvars      # keep sample/example tfvars if you want
+
+# Exclude sensitive local files
+terraform.tfvars
+secret.auto.tfvars
+*.auto.tfvars
+
+# Ignore plan output files
+*.plan
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Log or temp files
+*.log
+*.tmp
+
+# Lock file (optional — some teams keep it tracked)
+.terraform.lock.hcl
+
+
+# PYTHON.GITIGNORE
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+*.pyd
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+# (These files can contain build metadata or runtime binaries)
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+test-results/
+
+# Logs
+*.log
+
+# IDE / Editor specific
+.vscode/
+.idea/
+.spyproject/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+# (JetBrains settings and caches)
+.idea/
+*.iml
+
+# Django / Flask specific
+*.db
+*.sqlite3
+instance/
+*.pyc
+*.pyo
+
+# Environment files
+.env
+.env.*
+.envrc
+*.env
+*.ini
+*.cfg
+
+# AWS credentials or config
+.aws/
+*.pem
+*.key
+*.crt
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+
+# Mac / Windows system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Generated artifacts (optional)
+output/
+logs/
+temp/
+tmp/
+
+# If using coverage or linting reports
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Optional — Python lock files
+poetry.lock
+Pipfile.lock
+requirements.txt.lock
+
+# Docker / container artifacts (if applicable)
+docker-compose.override.yml
+.dockerignore
