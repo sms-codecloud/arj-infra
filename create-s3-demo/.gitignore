@@ -68,6 +68,7 @@ ENV/
 .ENV/
 env.bak/
 venv.bak/
+myenv/            # ✅ your custom virtual environment
 
 # Distribution / packaging
 build/
@@ -90,7 +91,6 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-# (These files can contain build metadata or runtime binaries)
 *.manifest
 *.spec
 
@@ -122,11 +122,6 @@ test-results/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# PyCharm
-# (JetBrains settings and caches)
-.idea/
-*.iml
-
 # Django / Flask specific
 *.db
 *.sqlite3
@@ -134,13 +129,14 @@ instance/
 *.pyc
 *.pyo
 
-# Environment files
+# Environment / secrets
 .env
 .env.*
 .envrc
 *.env
 *.ini
 *.cfg
+*.json
 
 # AWS credentials or config
 .aws/
@@ -155,27 +151,28 @@ instance/
 *.swo
 *.orig
 
-# Mac / Windows system files
+# System files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Generated artifacts (optional)
+# Generated artifacts
 output/
 logs/
 temp/
 tmp/
 
-# If using coverage or linting reports
+# Static analysis / type checking
 .mypy_cache/
 .pyre/
 .pytype/
 
-# Optional — Python lock files
+# Optional dependency locks
 poetry.lock
 Pipfile.lock
 requirements.txt.lock
 
-# Docker / container artifacts (if applicable)
+# Docker / container artifacts
 docker-compose.override.yml
 .dockerignore
+
